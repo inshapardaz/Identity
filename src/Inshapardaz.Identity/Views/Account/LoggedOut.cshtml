@@ -1,0 +1,42 @@
+﻿@using Inshapardaz.Identity.Quickstart.Account
+@model LoggedOutViewModel
+
+
+
+@{
+    ViewData["Title"] = "Logged Out";
+    Layout = "~/Views/Shared/_layoutHome.cshtml"; 
+    // set this so UI rendering sees an anonymous user
+    Context.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
+}
+
+
+@if (Model.PostLogoutRedirectUri != null)
+{
+    <div class="text-center push-20-t">
+        Click <a class="PostLogoutRedirectUri" href="@Model.PostLogoutRedirectUri">here</a> to return to the
+        <span>@Model.ClientName</span> application.
+    </div>
+}
+
+@if (Model.SignOutIframeUrl != null)
+{
+    <iframe width="0" height="0" class="signout" src="@Model.SignOutIframeUrl"></iframe>
+}
+
+@if (Model.PostLogoutRedirectUri == null && Model.SignOutIframeUrl == null)
+{
+    <div class="text-center push-30-t">
+        <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+            <a class="btn btn-sm btn-block btn-primary" asp-controller="Account" asp-action="Login" >Log in</a>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    @if (Model.AutomaticRedirectAfterSignOut)
+    {
+        <script src="~/js/signout-redirect.js"></script>
+    }
+}

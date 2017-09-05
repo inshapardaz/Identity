@@ -1,0 +1,61 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "~/Views/Shared/_layoutHome.cshtml";
+}
+
+<form asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]"
+      method="post" class="js-validation-register form-horizontal push-50-t push-50">
+    
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="form-material form-material-primary floating">
+                @Html.TextBoxFor(model => model.Email, new { id = "Email", @class = "form-control" })
+                @Html.LabelFor(model => model.Email)
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="form-material form-material-primary floating">
+                @Html.PasswordFor(model => model.Password, new { id = "Password", @class = "form-control" })
+                @Html.LabelFor(model => model.Password)
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="form-material form-material-primary floating">
+                @Html.PasswordFor(model => model.ConfirmPassword, new { id = "ConfirmPassword", @class = "form-control" })
+                @Html.LabelFor(model => model.ConfirmPassword)
+            </div>
+        </div>
+    </div>
+
+    @if (ViewData?.ModelState[""]?.Errors?.Any() == true)
+    {
+        <div class="alert alert-danger alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h4 class="font-w300 push-15">Registeration Failed</h4>
+            <p>
+                @foreach (var error in ViewData.ModelState[""].Errors)
+                {
+                    WriteLiteral(error.ErrorMessage);
+                    <br/>
+                }
+            </p>
+        </div>
+    }
+
+    <div class="form-group push-30-t">
+        <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+            <button class="btn btn-sm btn-block btn-primary" type="submit">Register</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/assets/js/pages/base_pages_register.js"></script>
+}

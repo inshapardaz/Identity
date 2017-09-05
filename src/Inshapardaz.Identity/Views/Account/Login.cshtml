@@ -1,0 +1,88 @@
+﻿@using System.Linq
+@using Inshapardaz.Identity.Quickstart.Account
+@model LoginViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewData["Title"] = "Log in";
+    Layout = "~/Views/Shared/_layoutHome.cshtml";
+}
+
+<form asp-controller="Account" asp-action="Login" asp-route-returnurl="@Model.ReturnUrl" 
+      method="post" class="js-validation-login form-horizontal push-30-t">
+    
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="form-material form-material-primary floating">
+                @Html.TextBoxFor(model => model.Email, new { id = "login-email", @class="form-control" } )
+                @Html.LabelFor(model => model.Email)
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="form-material form-material-primary floating">
+                @Html.PasswordFor(model => model.Password, new { id = "login-password", @class = "form-control" })
+                @Html.LabelFor(model => model.Password)
+            </div>
+        </div>
+    </div>
+    
+    @if (ViewData?.ModelState[""]?.Errors?.Any() == true)
+    {
+        <div class="alert alert-danger alert-dismissable">
+            <p class="font-w300 push-15">Login Failed</p>
+        </div>
+    }
+    
+    <div class="form-group">
+        <div class="col-xs-6">
+            <label class="css-input switch switch-sm switch-primary">
+                <input asp-for="RememberLogin" type="checkbox"><span></span> @Html.DisplayNameFor(m => m.RememberLogin)
+            </label>
+        </div>
+        <div class="col-xs-6">
+            <div class="font-s13 text-right push-5-t">
+                <a asp-action="ForgotPassword">Forgot Password?</a>
+            </div>
+        </div>
+    </div>
+    <div class="form-group push-30-t">
+        <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+            <button class="btn btn-sm btn-block btn-primary" type="submit">Log in</button>
+        </div>
+    </div>
+
+    <div class="text-center push-20-t">
+        <a asp-action="Register" asp-route-returnurl="@Model.ReturnUrl">Register</a>
+    </div>
+    
+    <div class="text-center push-30-t">
+        @{
+            var loginProviders = Model.ExternalProviders.ToArray();
+            if (loginProviders.Length != 0)
+            {
+                <form asp-controller="Account" asp-action="ExternalLogin" 
+                      asp-route-returnurl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <div>
+                        <p>
+                            @foreach (var provider in loginProviders)
+                            {
+                                <button type="submit" class="btn btn-default" name="provider" value="@provider.AuthenticationScheme" 
+                                        title="Log in using your @provider.DisplayName account">@provider.AuthenticationScheme</button>
+                            }
+                        </p>
+                    </div>
+                </form>
+            }
+        }
+    </div>
+</form>
+
+
+
+
+@section Scripts {
+    <script src="~/assets/js/pages/base_pages_register.js"></script>
+}
