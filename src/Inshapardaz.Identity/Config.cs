@@ -93,16 +93,16 @@ namespace Inshapardaz.Identity
                     AllowAccessTokensViaBrowser = true,
                     RedirectUris = new List<string>
                     {
-                        "http://localhost:5000"
+                        "http://localhost:5001/"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        "http://localhost:5000/Unauthorized"
+                        "http://localhost:5001/"
                     },
                     AllowedCorsOrigins = new List<string>
                     {
-                        "https://localhost:5000",
-                        "http://localhost:5000"
+                        "http://localhost:5001/",
+                        "http://localhost:5001/"
                     },
                     AllowedScopes = new List<string>
                     {
