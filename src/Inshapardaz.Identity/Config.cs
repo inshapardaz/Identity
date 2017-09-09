@@ -35,65 +35,17 @@ namespace Inshapardaz.Identity
             {
                 new Client
                 {
-                    ClientId = "client",
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
-
-                    ClientSecrets = 
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    AllowedScopes = { "api1" }
-                },
-
-                // resource owner password grant client
-                new Client
-                {
-                    ClientId = "ro.client",
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-
-                    ClientSecrets = 
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    AllowedScopes = { "api1" }
-                },
-
-                // OpenID Connect hybrid flow and client credentials client (MVC)
-                new Client
-                {
-                    ClientId = "mvc",
-                    ClientName = "MVC Client",
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-
-                    RequireConsent = true,
-
-                    ClientSecrets = 
-                    {
-                        new Secret("secret".Sha256())
-                    },
-
-                    RedirectUris = { "http://localhost:5002/signin-oidc" },
-                    PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
-
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        "api1"
-                    },
-                    AllowOfflineAccess = true
-                },
-                new Client
-                {
                     ClientName = "angular2client",
                     ClientId = "angular2client",
                     AccessTokenType = AccessTokenType.Reference,
                     //AccessTokenLifetime = 600, // 10 minutes, default 60 minutes
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
+                    RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        "http://localhost:5001/redirect.html"
+                        "http://localhost:5001/redirect.html",
+                        "http://localhost:5000"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
@@ -102,7 +54,8 @@ namespace Inshapardaz.Identity
                     },
                     AllowedCorsOrigins = new List<string>
                     {
-                        "http://localhost:5001/"
+                        "http://localhost:5001/",
+                        "http://localhost:5000/"
                     },
                     AllowedScopes = new List<string>
                     {

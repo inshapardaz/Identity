@@ -57,14 +57,14 @@ namespace Inshapardaz.Identity.Controllers
         // GET: /Account/Login
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Login(string redirect_Uri)
+        public async Task<IActionResult> Login(string returnUrl)
         {
-            var vm = await _account.BuildLoginViewModelAsync(redirect_Uri);
+            var vm = await _account.BuildLoginViewModelAsync(returnUrl);
 
             if (vm.IsExternalLoginOnly)
             {
                 // only one option for logging in
-                return ExternalLogin(vm.ExternalProviders.First().AuthenticationScheme, redirect_Uri);
+                return ExternalLogin(vm.ExternalProviders.First().AuthenticationScheme, returnUrl);
             }
 
             return View(vm);
