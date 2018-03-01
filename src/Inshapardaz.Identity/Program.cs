@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Inshapardaz.Identity
@@ -8,17 +7,13 @@ namespace Inshapardaz.Identity
     {
         public static void Main(string[] args)
         {
-            Console.Title = "IdentityServer";
-
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://localhost:5002")
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
+            BuildWebHost(args).Run();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                   .UseApplicationInsights()
+                   .UseStartup<Startup>()
+                   .Build();
     }
 }

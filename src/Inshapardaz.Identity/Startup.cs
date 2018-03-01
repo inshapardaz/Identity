@@ -1,15 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Reflection;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Test;
 using Inshapardaz.Identity.Data;
 using Inshapardaz.Identity.Models;
 using Inshapardaz.Identity.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +31,8 @@ namespace Inshapardaz.Identity
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            try
+            {
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -44,8 +42,6 @@ namespace Inshapardaz.Identity
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
-            MigrateDatabase(connectionString);
-
             services.AddMvc();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -54,14 +50,26 @@ namespace Inshapardaz.Identity
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
-                    .AddConfigurationStore(builder =>
-                                               builder.UseSqlServer(connectionString, options =>
-                                                                        options.MigrationsAssembly(migrationsAssembly)))
-                    .AddOperationalStore(builder =>
-                                             builder.UseSqlServer(connectionString, options =>
-                                                                      options.MigrationsAssembly(migrationsAssembly)))
+                    .AddDeveloperSigningCredential()
+                    .AddOperationalStore(options =>
+                    {
+                        options.ConfigureDbContext = builder =>
+                            builder.UseSqlServer(connectionString, sql =>
+                                                     sql.MigrationsAssembly(migrationsAssembly));
+                    })
+                    .AddConfigurationStore(options =>
+                    {
+                        options.ConfigureDbContext = builder =>
+                            builder.UseSqlServer(connectionString,
+                                                 sql => sql.MigrationsAssembly(migrationsAssembly));
+                    })
                     .AddAspNetIdentity<ApplicationUser>();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -82,17 +90,40 @@ namespace Inshapardaz.Identity
 
             app.UseStaticFiles();
 
-            app.UseIdentity();
+            //app.UseIdentity();
             app.UseIdentityServer();
 
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-            app.UseGoogleAuthentication(new GoogleOptions
-            {
-                AuthenticationScheme = "Google",
-                SignInScheme = "Identity.External", // this is the name of the cookie middleware registered by UseIdentity()
-                ClientId = "998042782978-s07498t8i8jas7npj4crve1skpromf37.apps.googleusercontent.com",
-                ClientSecret = "HsnwJri_53zn7VcO1Fm7THBb",
-            });
+            //app.UseGoogleAuthentication(new GoogleOptions
+            //{
+            //    AuthenticationScheme = "Google",
+            //    SignInScheme = AuthenticationSchemeConstants.ExternalCookieAuthenticationScheme,
+            //    AccessType = "offline",
+            //    ClientId = "<..>",
+            //    ClientSecret = "<..>",
+            //    Scope =
+            //    {
+            //        "https://www.googleapis.com/auth/plus.me",
+            //        "https://www.googleapis.com/auth/userinfo.email",
+            //        "https://www.googleapis.com/auth/userinfo.profile"
+            //    }
+            //});
+
+            //app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
+            //{
+            //    //https://apps.dev.microsoft.com/?mkt=en-us#/appList
+            //    AuthenticationScheme = "Microsoft",
+            //    SignInScheme = AuthenticationSchemeConstants.ExternalCookieAuthenticationScheme,
+            //    ClientId = "<..>",
+            //    ClientSecret = "<..>",
+            //});
+
+            //app.UseTwitterAuthentication(new TwitterOptions
+            //{
+            //    AuthenticationScheme = "Twitter",
+            //    SignInScheme = AuthenticationSchemeConstants.ExternalCookieAuthenticationScheme,
+            //    ConsumerKey = "<..>",
+            //    ConsumerSecret = "<..>",
+            //});
 
             app.UseMvc(routes =>
             {
@@ -100,15 +131,10 @@ namespace Inshapardaz.Identity
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
 
-        private static void MigrateDatabase(string connectionString)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
-
-            var database = new ApplicationDbContext(optionsBuilder.Options).Database;
-            database.Migrate();
+            DataInitializer.MigrateDatabase(app);
+            DataInitializer.Initialize(app).Wait();
+            DataInitializer.InitializeIdentity(app);
         }
     }
 }

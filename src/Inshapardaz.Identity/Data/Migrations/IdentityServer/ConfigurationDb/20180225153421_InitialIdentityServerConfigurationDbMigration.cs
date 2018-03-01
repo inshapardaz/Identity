@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Metadata;
+using System;
+using System.Collections.Generic;
 
 namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
 {
@@ -41,17 +41,22 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
                     AlwaysIncludeUserClaimsInIdToken = table.Column<bool>(nullable: false),
                     AlwaysSendClientClaims = table.Column<bool>(nullable: false),
                     AuthorizationCodeLifetime = table.Column<int>(nullable: false),
+                    BackChannelLogoutSessionRequired = table.Column<bool>(nullable: false),
+                    BackChannelLogoutUri = table.Column<string>(maxLength: 2000, nullable: true),
+                    ClientClaimsPrefix = table.Column<string>(maxLength: 200, nullable: true),
                     ClientId = table.Column<string>(maxLength: 200, nullable: false),
                     ClientName = table.Column<string>(maxLength: 200, nullable: true),
                     ClientUri = table.Column<string>(maxLength: 2000, nullable: true),
+                    ConsentLifetime = table.Column<int>(nullable: true),
+                    Description = table.Column<string>(maxLength: 1000, nullable: true),
                     EnableLocalLogin = table.Column<bool>(nullable: false),
                     Enabled = table.Column<bool>(nullable: false),
+                    FrontChannelLogoutSessionRequired = table.Column<bool>(nullable: false),
+                    FrontChannelLogoutUri = table.Column<string>(maxLength: 2000, nullable: true),
                     IdentityTokenLifetime = table.Column<int>(nullable: false),
                     IncludeJwtId = table.Column<bool>(nullable: false),
-                    LogoUri = table.Column<string>(nullable: true),
-                    LogoutSessionRequired = table.Column<bool>(nullable: false),
-                    LogoutUri = table.Column<string>(nullable: true),
-                    PrefixClientClaims = table.Column<bool>(nullable: false),
+                    LogoUri = table.Column<string>(maxLength: 2000, nullable: true),
+                    PairWiseSubjectSalt = table.Column<string>(maxLength: 200, nullable: true),
                     ProtocolType = table.Column<string>(maxLength: 200, nullable: false),
                     RefreshTokenExpiration = table.Column<int>(nullable: false),
                     RefreshTokenUsage = table.Column<int>(nullable: false),
@@ -255,6 +260,27 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "ClientProperties",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ClientId = table.Column<int>(nullable: false),
+                    Key = table.Column<string>(maxLength: 250, nullable: false),
+                    Value = table.Column<string>(maxLength: 2000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientProperties", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ClientProperties_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ClientRedirectUris",
                 columns: table => new
                 {
@@ -358,15 +384,20 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ApiClaims_ApiResourceId",
+                table: "ApiClaims",
+                column: "ApiResourceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ApiResources_Name",
                 table: "ApiResources",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApiClaims_ApiResourceId",
-                table: "ApiClaims",
-                column: "ApiResourceId");
+                name: "IX_ApiScopeClaims_ApiScopeId",
+                table: "ApiScopeClaims",
+                column: "ApiScopeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ApiScopes_ApiResourceId",
@@ -380,20 +411,9 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApiScopeClaims_ApiScopeId",
-                table: "ApiScopeClaims",
-                column: "ApiScopeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ApiSecrets_ApiResourceId",
                 table: "ApiSecrets",
                 column: "ApiResourceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Clients_ClientId",
-                table: "Clients",
-                column: "ClientId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ClientClaims_ClientId",
@@ -421,9 +441,20 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClientProperties_ClientId",
+                table: "ClientProperties",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ClientRedirectUris_ClientId",
                 table: "ClientRedirectUris",
                 column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Clients_ClientId",
+                table: "Clients",
+                column: "ClientId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ClientScopes_ClientId",
@@ -472,6 +503,9 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.ConfigurationDb
 
             migrationBuilder.DropTable(
                 name: "ClientPostLogoutRedirectUris");
+
+            migrationBuilder.DropTable(
+                name: "ClientProperties");
 
             migrationBuilder.DropTable(
                 name: "ClientRedirectUris");
