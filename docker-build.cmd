@@ -1,2 +1,2 @@
-docker build -t inshapardaz/identity .
+docker build -t inshapardaz/identity:latest .
 docker push inshapardaz/identity

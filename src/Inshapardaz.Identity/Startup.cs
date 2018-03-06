@@ -22,7 +22,7 @@ namespace Inshapardaz.Identity
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
-            builder.AddEnvironmentVariables();
+            //builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
@@ -36,7 +36,7 @@ namespace Inshapardaz.Identity
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(options =>
-                                                            options.UseSqlServer(connectionString));
+                                                            options.UseMySql(connectionString));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -49,18 +49,18 @@ namespace Inshapardaz.Identity
             
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            services.AddIdentityServer()
+            services.AddIdentityServer(option => option.IssuerUri = Configuration["AuthServer:IssuerUri"])
                     .AddDeveloperSigningCredential()
                     .AddOperationalStore(options =>
                     {
                         options.ConfigureDbContext = builder =>
-                            builder.UseSqlServer(connectionString, sql =>
+                            builder.UseMySql(connectionString, sql =>
                                                      sql.MigrationsAssembly(migrationsAssembly));
                     })
                     .AddConfigurationStore(options =>
                     {
                         options.ConfigureDbContext = builder =>
-                            builder.UseSqlServer(connectionString,
+                            builder.UseMySql(connectionString,
                                                  sql => sql.MigrationsAssembly(migrationsAssembly));
                     })
                     .AddAspNetIdentity<ApplicationUser>();
