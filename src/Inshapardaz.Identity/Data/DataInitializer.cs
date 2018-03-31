@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
-using IdentityServer4.Test;
 using Inshapardaz.Identity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -73,6 +71,7 @@ namespace Inshapardaz.Identity.Data
                     var userStore = new UserStore<ApplicationUser>(context);
                     await userStore.CreateAsync(user);
                     await userStore.AddToRoleAsync(user, "Owner");
+                    await userStore.AddToRoleAsync(user, "Administrator");
                     await context.SaveChangesAsync();
                 }
             }
@@ -147,7 +146,7 @@ namespace Inshapardaz.Identity.Data
                         ClientId = "inshapardaz-web",
                         ClientName = "Inshapardaz Website",
                         AllowedGrantTypes = GrantTypes.Implicit,
-                        AllowedCorsOrigins = new List<string> {"http://localhost:4200"},
+                        AllowedCorsOrigins = new List<string> { "http://localhost:4200"},
                         ClientSecrets = new List<Secret>
                         {
                             new Secret("suoauthClientperSecretPassword".Sha256())
@@ -158,7 +157,8 @@ namespace Inshapardaz.Identity.Data
                             IdentityServerConstants.StandardScopes.Profile,
                             IdentityServerConstants.StandardScopes.Email,
                             "role",
-                            "customAPI.write"
+                            "inshapardazAPI.read",                            
+                            "inshapardazAPI.write"
                         },
                         ClientUri = "http://inshapardaz.azurewebsites.net",
                         RedirectUris = new List<string>
@@ -190,7 +190,8 @@ namespace Inshapardaz.Identity.Data
                             IdentityServerConstants.StandardScopes.Profile,
                             IdentityServerConstants.StandardScopes.Email,
                             "role",
-                            "customAPI.write"
+                            "inshapardazAPI.read",
+                            "inshapardazAPI.write"
                         },
                         ClientUri = "http://localhost:4200",
                         RedirectUris = new List<string>
@@ -212,10 +213,10 @@ namespace Inshapardaz.Identity.Data
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
                 new IdentityResources.Email(),
-                new IdentityResource {
-                    Name = "role",
-                    UserClaims = new List<string> {"role"}
-                }
+                new IdentityResource(
+                    name: "custom.profile",
+                    displayName: "Custom Profile",
+                    claimTypes: new[] { "name", "email", "role" })
             };
         }
 
@@ -223,32 +224,14 @@ namespace Inshapardaz.Identity.Data
         {
             return new List<ApiResource> {
                 new ApiResource {
-                    Name = "customAPI",
+                    Name = "inshapardazAPI",
                     DisplayName = "Custom API",
                     Description = "Custom API Access",
                     UserClaims = new List<string> {"role"},
                     ApiSecrets = new List<Secret> {new Secret("scopeSecret".Sha256())},
                     Scopes = new List<Scope> {
-                        new Scope("customAPI.read"),
-                        new Scope("customAPI.write")
-                    }
-                }
-            };
-        }
-    }
-
-    internal class Users
-    {
-        public static List<TestUser> Get()
-        {
-            return new List<TestUser> {
-                new TestUser {
-                    SubjectId = "5BE86359-073C-434B-AD2D-A3932222DABE",
-                    Username = "guest",
-                    Password = "tiger",
-                    Claims = new List<Claim> {
-                        new Claim(JwtClaimTypes.Email, "guest@tiget.com"),
-                        new Claim(JwtClaimTypes.Role, "reader")
+                        new Scope("inshapardazAPI.read"),
+                        new Scope("inshapardazAPI.write")
                     }
                 }
             };

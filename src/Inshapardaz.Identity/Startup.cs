@@ -20,7 +20,8 @@ namespace Inshapardaz.Identity
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
 
             //builder.AddEnvironmentVariables();
             Configuration = builder.Build();
@@ -33,37 +34,44 @@ namespace Inshapardaz.Identity
         {
             try
             {
-            var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                                                            options.UseMySql(connectionString));
+                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                // Add framework services.
+                services.AddDbContext<ApplicationDbContext>(options =>
+                                                                options.UseMySql(connectionString));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<ApplicationDbContext>()
-                    .AddDefaultTokenProviders();
+                services.AddIdentity<ApplicationUser, IdentityRole>()
+                        .AddEntityFrameworkStores<ApplicationDbContext>()
+                        .AddDefaultTokenProviders();
 
-            services.AddMvc();
+                services.AddMvc();
 
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
-            
-            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+                services.AddTransient<IEmailSender, AuthMessageSender>();
+                services.AddTransient<ISmsSender, AuthMessageSender>();
 
-            services.AddIdentityServer(option => option.IssuerUri = Configuration["AuthServer:IssuerUri"])
-                    .AddDeveloperSigningCredential()
-                    .AddOperationalStore(options =>
-                    {
-                        options.ConfigureDbContext = builder =>
-                            builder.UseMySql(connectionString, sql =>
+                var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+                services.AddIdentityServer(option =>
+                        {
+                            option.IssuerUri = Configuration["AuthServer:IssuerUri"];
+                            option.Events.RaiseErrorEvents = true;
+                            option.Events.RaiseInformationEvents = true;
+                            option.Events.RaiseFailureEvents = true;
+                            option.Events.RaiseSuccessEvents = true;
+                        })
+                        .AddDeveloperSigningCredential()
+                        .AddOperationalStore(options =>
+                        {
+                            options.ConfigureDbContext = builder =>
+                                builder.UseMySql(connectionString, sql =>
                                                      sql.MigrationsAssembly(migrationsAssembly));
-                    })
-                    .AddConfigurationStore(options =>
-                    {
-                        options.ConfigureDbContext = builder =>
-                            builder.UseMySql(connectionString,
+                        })
+                        .AddConfigurationStore(options =>
+                        {
+                            options.ConfigureDbContext = builder =>
+                                builder.UseMySql(connectionString,
                                                  sql => sql.MigrationsAssembly(migrationsAssembly));
-                    })
-                    .AddAspNetIdentity<ApplicationUser>();
+                        })
+                        .AddAspNetIdentity<ApplicationUser>();
             }
             catch (Exception e)
             {
