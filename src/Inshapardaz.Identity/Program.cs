@@ -14,6 +14,7 @@ namespace Inshapardaz.Identity
             WebHost.CreateDefaultBuilder(args)
                    .UseApplicationInsights()
                    .UseStartup<Startup>()
+                   .CaptureStartupErrors(true)
                    .Build();
     }
 }
