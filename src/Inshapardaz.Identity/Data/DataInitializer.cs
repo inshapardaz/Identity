@@ -146,7 +146,7 @@ namespace Inshapardaz.Identity.Data
                         ClientId = "inshapardaz-web",
                         ClientName = "Inshapardaz Website",
                         AllowedGrantTypes = GrantTypes.Implicit,
-                        AllowedCorsOrigins = new List<string> { "http://localhost:4200"},
+                        AllowedCorsOrigins = new List<string> { "http://inshapardaz.azurewebsites.net"},
                         ClientSecrets = new List<Secret>
                         {
                             new Secret("suoauthClientperSecretPassword".Sha256())
