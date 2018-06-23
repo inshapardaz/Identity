@@ -5,29 +5,62 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    <h1>Welcome back @User.Identity.Name</h1>
-    <h2>User Claims</h2>
-    <dl>
-        @foreach (var claim in User.Claims)
-        {
-            <dt>@claim.Type</dt>
-            <dd>@claim.Value</dd>
-        }
-    </dl>
+    <div class="content content-boxed">
+        <div class="block">
+            <div class="bg-image user-header" style="background-image: url('assets/img/photos/photo6@2x.jpg');">
+                <div class="block-content bg-primary-dark-op text-center overflow-hidden">
+                    <div class="push-30-t push animated fadeInDown">
+                        <img class="img-avatar img-avatar96 img-avatar-thumb" src="assets/img/avatars/avatar4.jpg" alt="">
+                    </div>
+                    <div class="push-30 animated fadeInUp">
+                        <h1 class="h2 text-white push-5-t animated zoomIn">@User.Identity.Name</h1>
+                        <h2 class="h5 text-white-op animated zoomIn">@User.Claims.SingleOrDefault(c => c.Type == "role")?.Value</h2>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-sm-5 col-sm-push-7 col-lg-4 col-lg-push-8">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title"><i class="fa fa-cog fa-2x"></i> Manage</h3>
+                    </div>
+                    <div class="block-content block-content-full text-center">
+                        <a asp-controller="Manage" asp-action="ChangePassword" class="btn-bracketed">Change Password</a>
+                        @*@Model.Logins.Count <a asp-controller="Manage" asp-action="ManageLogins" class="btn-bracketed">Manage</a>*@
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-7 col-sm-pull-5 col-lg-8 col-lg-pull-4">
+                <div class="block block-opt-refresh-icon6">
+                    <div class="block-header">
+                        <h3 class="block-title"><i class="fa fa-lock fa-2x"></i> User Claims</h3>
+                    </div>
+                    <div class="block-content">
 
-    var authScheme = "Identity.Application";
-    if (!String.IsNullOrWhiteSpace(authScheme))
-    {
-        <h2>Cookies Properties</h2>
-        <dl>
-            @{
-                var props = (await Context.AuthenticateAsync(authScheme)).Properties;
-            }
-            @foreach (var item in props.Items)
-            {
-                <dt>@item.Key</dt>
-                <dd>@item.Value</dd>
-            }
-        </dl>
-    }
+                        <div class="block block-transparent pull-r-l">
+                            <div class="block-content">
+                                <ul class="list list-simple list-li-clearfix">
+                                    @foreach (var claim in User.Claims)
+                                    {
+                                        <li>
+                                            <a class="item item-rounded pull-left push-10-r bg-info" href="javascript:void(0)">
+                                                <i class="si si-key text-white-op"></i>
+                                            </a>
+
+                                            <i class="text-success push-10-t"></i> @claim.Value
+                                            <div class="text-muted font-s13"><small>@claim.Type</small></div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 }
+
