@@ -11,6 +11,8 @@
     <PackageReference Include="IdentityServer4.EntityFramework" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="2.0.0-preview-final" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>

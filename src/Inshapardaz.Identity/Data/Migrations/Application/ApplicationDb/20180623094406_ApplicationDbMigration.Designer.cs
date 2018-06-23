@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.Application
+namespace Inshapardaz.Identity.Data.Migrations.Application.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180303121609_initialise")]
-    partial class initialise
+    [Migration("20180623094406_ApplicationDbMigration")]
+    partial class ApplicationDbMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
-                .HasAnnotation("ProductVersion", "2.0.1-rtm-125");
+                .HasAnnotation("ProductVersion", "2.0.1-rtm-125")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Inshapardaz.Identity.Models.ApplicationUser", b =>
                 {
@@ -66,7 +66,8 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.Application
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasName("UserNameIndex");
+                        .HasName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -89,7 +90,8 @@ namespace Inshapardaz.Identity.Data.Migrations.IdentityServer.Application
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasName("RoleNameIndex");
+                        .HasName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
                 });

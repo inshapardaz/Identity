@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityServer4;
 using IdentityServer4.EntityFramework.DbContexts;
@@ -11,8 +10,8 @@ using Inshapardaz.Identity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Inshapardaz.Identity.Data
@@ -27,6 +26,16 @@ namespace Inshapardaz.Identity.Data
 
                 var database = context.Database;
                 database.Migrate();
+
+                var persistedGrantDbContext = scope.ServiceProvider.GetService<PersistedGrantDbContext>();
+
+                var persistedGrantDb = persistedGrantDbContext.Database;
+                persistedGrantDb.Migrate();
+
+                var configurationDbContext = scope.ServiceProvider.GetService<ConfigurationDbContext>();
+
+                var configurationDatabase = configurationDbContext.Database;
+                configurationDatabase.Migrate();
             }
         }
 
@@ -34,45 +43,47 @@ namespace Inshapardaz.Identity.Data
         {
             using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
-                var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
+                //initializing custom roles 
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                string[] roleNames = { "Super", "Administrator", "Contributor", "Reader" };
+                IdentityResult roleResult;
 
-                string[] roles = new string[] {"Owner", "Administrator", "Contributor", "Reader"};
-
-                foreach (string role in roles)
+                foreach (var roleName in roleNames)
                 {
-                    var roleStore = new RoleStore<IdentityRole>(context);
-
-                    if (!context.Roles.Any(r => r.Name == role))
+                    var roleExist = await roleManager.RoleExistsAsync(roleName);
+                    if (!roleExist)
                     {
-                        await roleStore.CreateAsync(new IdentityRole(role) {NormalizedName = role.ToUpper()});
+                        //create the roles and seed them to the database: Question 1
+                        roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
                     }
                 }
 
-
-                var user = new ApplicationUser
+                //Here you could create a super user who will maintain the web app
+                var poweruser = new ApplicationUser
                 {
-                    Email = "momarf@gmail.com",
-                    NormalizedEmail = "MOMARF@GMAIL.COM",
-                    UserName = "momarf@gmail.com",
-                    NormalizedUserName = "MOMARF@GMAIL.COM",
-                    EmailConfirmed = true,
-                    PhoneNumberConfirmed = true,
-                    LockoutEnabled = false,
-                    SecurityStamp = Guid.NewGuid().ToString("D")
+
+                    UserName = configuration["AppSettings:SuperUserName"],
+                    Email = configuration["AppSettings:SuperUserEmail"],
                 };
 
+                //Ensure you have these values in your appsettings.json file
+                string userPWD = configuration["AppSettings:SuperUserPassword"];
+                var _user = await userManager.FindByEmailAsync(configuration["AppSettings:SuperUserEmail"]);
 
-                if (!context.Users.Any(u => u.UserName == user.UserName))
+                if (_user == null)
                 {
-                    var password = new PasswordHasher<ApplicationUser>();
-                    var hashed = password.HashPassword(user, "changeit");
-                    user.PasswordHash = hashed;
-
-                    var userStore = new UserStore<ApplicationUser>(context);
-                    await userStore.CreateAsync(user);
-                    await userStore.AddToRoleAsync(user, "Owner");
-                    await userStore.AddToRoleAsync(user, "Administrator");
-                    await context.SaveChangesAsync();
+                    var createPowerUser = await userManager.CreateAsync(poweruser, userPWD);
+                    if (createPowerUser.Succeeded)
+                    {
+                        //here we tie the new user to the role
+                        await userManager.AddToRoleAsync(poweruser, "Super");
+                    }
+                    else
+                    {
+                        throw new ApplicationException("Unable to create administrator user account." + Environment.NewLine +  string.Join('\n' , createPowerUser.Errors));
+                    }
                 }
             }
         }

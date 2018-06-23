@@ -22,3 +22,25 @@ Checkout code and
 `dotnet build`
 
 `dotnet run`
+
+
+### Adding migrations for Identity Server
+
+[Source](http://docs.identityserver.io/en/release/quickstarts/8_entity_framework.html#adding-migrations)
+
+`dotnet ef migrations add ApplicationDbMigration -c ApplicationDbContext -o Data/Migrations/Application/ApplicationDb`    
+
+`dotnet ef migrations add InitialIdentityServerPersistedGrantDbMigration -c PersistedGrantDbContext -o Data/Migrations/IdentityServer/PersistedGrantDb`
+
+`dotnet ef migrations add InitialIdentityServerConfigurationDbMigration -c ConfigurationDbContext -o Data/Migrations/IdentityServer/ConfigurationDb`    
+
+
+
+#### Update database
+
+'dotnet ef database update -c ApplicationDbMigration'
+
+`dotnet ef database update -c PersistedGrantDbContext`
+
+'dotnet ef database update -c ConfigurationDbContext'
+

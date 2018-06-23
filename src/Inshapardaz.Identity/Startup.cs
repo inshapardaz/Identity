@@ -23,7 +23,7 @@ namespace Inshapardaz.Identity
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            //builder.AddEnvironmentVariables();
+            builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
@@ -36,8 +36,12 @@ namespace Inshapardaz.Identity
             {
                 var connectionString = Configuration.GetConnectionString("DefaultConnection");
                 // Add framework services.
+
                 services.AddDbContext<ApplicationDbContext>(options =>
-                                                                options.UseMySql(connectionString));
+                {
+                    // options.UseMySql(connectionString);
+                    options.UseSqlServer(connectionString);
+                });
 
                 services.AddIdentity<ApplicationUser, IdentityRole>()
                         .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -62,14 +66,18 @@ namespace Inshapardaz.Identity
                         .AddOperationalStore(options =>
                         {
                             options.ConfigureDbContext = builder =>
-                                builder.UseMySql(connectionString, sql =>
-                                                     sql.MigrationsAssembly(migrationsAssembly));
+                            {
+                                // builder.UseMySql(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                                builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                            };
                         })
                         .AddConfigurationStore(options =>
                         {
                             options.ConfigureDbContext = builder =>
-                                builder.UseMySql(connectionString,
-                                                 sql => sql.MigrationsAssembly(migrationsAssembly));
+                            {
+                                //builder.UseMySql(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                                builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                            };
                         })
                         .AddAspNetIdentity<ApplicationUser>();
             }
